@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Purchase Order</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --border: #2e3250;
+            --accent: #6c63ff;
+            --accent2: #00d4aa;
+            --danger: #ff4d6d;
+            --text: #e8eaf6;
+            --text-muted: #7b82a8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar (same as orderList) */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 240px; height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            padding: 28px 20px; z-index: 100;
+        }
+
+        .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .logo-text { font-size: 14px; font-weight: 700; line-height: 1.2; }
+        .logo-text span { display: block; font-size: 10px; font-weight: 400; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+        .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; padding-left: 12px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: var(--text-muted); font-size: 13.5px; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+        .nav-item:hover, .nav-item.active { background: var(--surface2); color: var(--text); }
+        .nav-item.active { color: var(--accent); background: rgba(108,99,255,0.1); }
+        .sidebar-footer { margin-top: auto; padding: 16px 12px; background: var(--surface2); border-radius: 12px; font-size: 12px; color: var(--text-muted); }
+
+        /* Main */
+        .main { margin-left: 240px; padding: 32px; width: calc(100% - 240px); }
+
+        .page-header { margin-bottom: 32px; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--text); }
+        .page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+
+        /* Form Layout */
+        .form-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+
+        .icon-purple { background: rgba(108,99,255,0.2); }
+        .icon-teal   { background: rgba(0,212,170,0.2); }
+
+        .card-title { font-size: 14px; font-weight: 700; }
+        .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+        .card-body { padding: 24px; }
+
+        /* Form Fields */
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .field-row.single { grid-template-columns: 1fr; }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .field input,
+        .field textarea,
+        .field select {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13.5px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
+        }
+
+        .field input::placeholder,
+        .field textarea::placeholder { color: #444a6a; }
+        .field textarea { resize: vertical; min-height: 80px; }
+
+        /* Items Section */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0 16px;
+        }
+
+        .section-divider span {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .item-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .item-card .item-grid {
+            display: grid;
+            grid-template-columns: 1fr 100px 120px 36px;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .item-card label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .item-card input {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .item-card input:focus { border-color: var(--accent); }
+        .item-card input::placeholder { color: #444a6a; }
+
+        .btn-remove {
+            width: 36px; height: 36px;
+            background: rgba(255,77,109,0.1);
+            border: 1px solid rgba(255,77,109,0.2);
+            border-radius: 8px;
+            color: var(--danger);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover { background: rgba(255,77,109,0.2); }
+
+        .btn-add-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(108,99,255,0.08);
+            border: 1px dashed rgba(108,99,255,0.3);
+            border-radius: 10px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            width: 100%;
+            justify-content: center;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+
+        .btn-add-item:hover { background: rgba(108,99,255,0.15); border-style: solid; }
+
+        /* Summary Card */
+        .summary-card { position: sticky; top: 32px; }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .summary-line:last-child { border-bottom: none; }
+        .summary-line .label { color: var(--text-muted); }
+        .summary-line .value { font-weight: 600; }
+        .summary-total .label { font-size: 14px; font-weight: 700; color: var(--text); }
+        .summary-total .value { font-size: 20px; font-weight: 800; color: var(--accent2); }
+
+        /* Buttons */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #8b7ff5);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(108,99,255,0.35);
+            margin-top: 16px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(108,99,255,0.45);
+        }
+
+        .btn-cancel {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .btn-cancel:hover { color: var(--text); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .main { animation: fadeIn 0.4s ease; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .item-card { animation: slideIn 0.2s ease; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="logo">
+        <div class="logo-icon">📦</div>
+        <div class="logo-text">StockFlow<span>Inventory System</span></div>
+    </div>
+    <div class="nav-label">Main Menu</div>
+    <a href="/orders" class="nav-item"><i class="bi bi-receipt"></i> Purchase Orders</a>
+    <a href="/createOrder" class="nav-item active"><i class="bi bi-plus-circle"></i> New Order</a>
+    <div class="sidebar-footer">
+        <div style="font-weight:600; color:var(--text); margin-bottom:4px;">New Purchase Order</div>
+        <div>Fill in the form to create</div>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="page-header">
+        <div class="breadcrumb">
+            <a href="/orders">Purchase Orders</a>
+            <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+            <span>New Order</span>
+        </div>
+        <div class="page-title">Create Purchase Order</div>
+    </div>
+
+    <form action="/createOrder" method="POST" id="poForm">
+        <div class="form-grid">
+
+            <!-- Left: Form -->
+            <div>
+                <!-- Supplier Info -->
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-header">
+                        <div class="card-header-icon icon-purple">🏢</div>
+                        <div>
+                            <div class="card-title">Supplier Information</div>
+                            <div class="card-subtitle">Who are you ordering from?</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="field-row">
+                            <div class="field">
+                                <label>Supplier ID</label>
+                                <input type="text" name="supplierId" placeholder="e.g. SUP-001" required>
+                            </div>
+                            <div class="field">
+                                <label>Supplier Name</label>
+                                <input type="text" name="supplierName" placeholder="e.g. ABC Electronics" required>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <label>Expected Delivery Date</label>
+                                <input type="date" name="expectedDate" required>
+                            </div>
+                            <div class="field">
+                                <label>Created By</label>
+                                <input type="text" name="createdBy" placeholder="Your name" required>
+                            </div>
+                        </div>
+                        <div class="field-row single">
+                            <div class="field">
+                                <label>Notes</label>
+                                <textarea name="notes" placeholder="Special instructions or remarks..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-header-icon icon-teal">📋</div>
+                        <div>
+                            <div class="card-title">Order Items</div>
+                            <div class="card-subtitle">Add items you want to order</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="itemsContainer">
+                            <div class="item-card">
+                                <div class="item-grid">
+                                    <div>
+                                        <label>Item Name</label>
+                                        <input type="text" name="itemName[]" placeholder="e.g. USB Cable" required>
+                                    </div>
+                                    <div>
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity[]" min="1" placeholder="0" required oninput="updateTotal()">
+                                    </div>
+                                    <div>
+                                        <label>Unit Price (Rs.)</label>
+                                        <input type="number" name="unitPrice[]" step="0.01" min="0" placeholder="0.00" required oninput="updateTotal()">
+                                    </div>
+                                    <div>
+                                        <label>&nbsp;</label>
+                                        <button type="button" class="btn-remove" onclick="removeItem(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add-item" onclick="addItem()">
+                            <i class="bi bi-plus-circle"></i> Add Another Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Summary -->
+            <div class="summary-card">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-header-icon icon-purple">📊</div>
+                        <div>
+                            <div class="card-title">Order Summary</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-line">
+                            <span class="label">Items</span>
+                            <span class="value" id="itemCount">1 item</span>
+                        </div>
+                        <div class="summary-line">
+                            <span class="label">Subtotal</span>
+                            <span class="value" id="subtotal">Rs. 0.00</span>
+                        </div>
+                        <div class="summary-line summary-total">
+                            <span class="label">Total</span>
+                            <span class="value" id="total">Rs. 0.00</span>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <i class="bi bi-check-circle"></i> Submit Purchase Order
+                        </button>
+                        <a href="/orders" class="btn-cancel">Cancel & go back</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</main>
+
+<script>
+    function addItem() {
+        const container = document.getElementById('itemsContainer');
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        div.innerHTML = `
+            <div class="item-grid">
+                <div>
+                    <label>Item Name</label>
+                    <input type="text" name="itemName[]" placeholder="Item name" required>
+                </div>
+                <div>
+                    <label>Quantity</label>
+                    <input type="number" name="quantity[]" min="1" placeholder="0" required oninput="updateTotal()">
+                </div>
+                <div>
+                    <label>Unit Price (Rs.)</label>
+                    <input type="number" name="unitPrice[]" step="0.01" min="0" placeholder="0.00" required oninput="updateTotal()">
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn-remove" onclick="removeItem(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+        container.appendChild(div);
+        updateTotal();
+    }
+
+    function removeItem(btn) {
+        const items = document.querySelectorAll('.item-card');
+        if (items.length > 1) {
+            btn.closest('.item-card').remove();
+            updateTotal();
+        } else {
+            alert('At least one item is required.');
+        }
+    }
+
+    function updateTotal() {
+        const quantities = document.querySelectorAll('input[name="quantity[]"]');
+        const prices     = document.querySelectorAll('input[name="unitPrice[]"]');
+        let total = 0;
+        for (let i = 0; i < quantities.length; i++) {
+            const q = parseFloat(quantities[i].value) || 0;
+            const p = parseFloat(prices[i].value)     || 0;
+            total += q * p;
+        }
+        document.getElementById('itemCount').textContent =
+            quantities.length + (quantities.length === 1 ? ' item' : ' items');
+        document.getElementById('subtotal').textContent = 'Rs. ' + total.toFixed(2);
+        document.getElementById('total').textContent    = 'Rs. ' + total.toFixed(2);
+    }
+</script>
+</body>
+</html>
