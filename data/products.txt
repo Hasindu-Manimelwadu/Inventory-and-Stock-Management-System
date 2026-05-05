@@ -1,0 +1,4 @@
+1|Rice|R001|Grocery|250.0|10|Non-Perishable||5kg white rice
+2|Milk Powder|M001|Dairy|480.0|8|Perishable|2026-06-15|400g milk powder
+4|Soap|SP001|Personal Care|120.0|3|Non-Perishable||Bath soap
+5|Fresh Milk|FM001|Dairy|220.0|2|Perishable|2026-05-10|1L fresh milk
