@@ -1,3 +1,2 @@
-TXN-002|STOCK_IN|PRD-002|Monitor|10|2026-05-06|Initial stock entry                   
-TXN-002|STOCK_IN|PRD-001|Laptop|10|2026-05-06|                    
-TXN-003|STOCK_IN|PRD-003|Key Board|50|2026-05-06|                    
+TXN-001|STOCK_IN|PRD-002|Monitor|15|2026-05-06|Initial stock entry
+TXN-002|STOCK_IN|PRD-001|Laptop|5|2026-05-07|

@@ -19,12 +19,27 @@ public class StockService {
     // adds a new transaction to the txt file
     public void addTransaction(StockTransaction transaction) throws IOException {
 
-        // get existing transactions to calculate the next id
+        // read existing transactions to find the highest ID number
         List<StockTransaction> existing = getAllTransactions();
-        String newId = "TXN-" + String.format("%03d", existing.size() + 1);
+
+        // find the highest existing ID number to avoid duplicates
+        int maxId = 0;
+        for (StockTransaction t : existing) {
+            try {
+                // extract the number from TXN-001 format
+                int num = Integer.parseInt(
+                        t.getTransactionId().replace("TXN-", "").trim());
+                if (num > maxId) maxId = num;
+            } catch (NumberFormatException e) {
+                // skip if ID format is unexpected
+            }
+        }
+
+        // new ID is always one higher than the current maximum
+        String newId = "TXN-" + String.format("%03d", maxId + 1);
         transaction.setTransactionId(newId);
 
-        // open file in append mode so old data is not lost
+        // open file in append mode so existing data is not lost
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(FILE_PATH, true));
         writer.write(transaction.toFileString());
@@ -49,25 +64,36 @@ public class StockService {
         // read file line by line
         while ((line = reader.readLine()) != null) {
 
-            // skip empty lines
-            if (line.trim().isEmpty()) continue;
+            // trim the entire line to remove trailing spaces and \r characters
+            line = line.trim();
 
-            // split each line by | to get the fields
-            String[] parts = line.split("\\|");
-            if (parts.length < 7) continue;
+            // skip empty lines
+            if (line.isEmpty()) continue;
+
+            // -1 keeps trailing empty strings when notes field is empty
+            String[] parts = line.split("\\|", -1);
+            if (parts.length < 6) continue;
+
+            // trim each part individually to remove hidden spaces
+            for (int i = 0; i < parts.length; i++) {
+                parts[i] = parts[i].trim();
+            }
 
             String type = parts[1];
             StockTransaction transaction;
+
+            // get notes safely, use empty string if notes field is missing
+            String notes = parts.length > 6 ? parts[6].trim() : "";
 
             // create the correct object based on transaction type
             if (type.equals("STOCK_IN")) {
                 transaction = new StockInTransaction(
                         parts[0], parts[2], parts[3],
-                        Integer.parseInt(parts[4]), parts[5], parts[6]);
+                        Integer.parseInt(parts[4]), parts[5], notes);
             } else {
                 transaction = new StockOutTransaction(
                         parts[0], parts[2], parts[3],
-                        Integer.parseInt(parts[4]), parts[5], parts[6]);
+                        Integer.parseInt(parts[4]), parts[5], notes);
             }
 
             transactions.add(transaction);
@@ -78,7 +104,9 @@ public class StockService {
     }
 
     // finds a transaction by id and updates quantity and notes
-    public void updateTransaction(String transactionId, int newQuantity, String newNotes) throws IOException {
+    public void updateTransaction(String transactionId,
+                                  int newQuantity,
+                                  String newNotes) throws IOException {
 
         List<StockTransaction> transactions = getAllTransactions();
 
