@@ -9,23 +9,22 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// service class that handles all file operations for stock transactions
 @Service
 public class StockService {
 
-    // Path to the text file used as the database
+    // path to the text file used to store transactions
     private static final String FILE_PATH = "data/stock_transactions.txt";
 
-    // -------------------------------------------------------
-    // CREATE — Write a new stock transaction to the text file
-    // -------------------------------------------------------
+    // adds a new transaction to the txt file
     public void addTransaction(StockTransaction transaction) throws IOException {
 
-        // Generate a unique ID before saving
+        // get existing transactions to calculate the next id
         List<StockTransaction> existing = getAllTransactions();
         String newId = "TXN-" + String.format("%03d", existing.size() + 1);
         transaction.setTransactionId(newId);
 
-        // Append the new transaction as a new line in the file
+        // open file in append mode so old data is not lost
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(FILE_PATH, true));
         writer.write(transaction.toFileString());
@@ -33,15 +32,13 @@ public class StockService {
         writer.close();
     }
 
-    // -------------------------------------------------------
-    // READ — Read all stock transactions from the text file
-    // -------------------------------------------------------
+    // reads all transactions from the txt file
     public List<StockTransaction> getAllTransactions() throws IOException {
 
         List<StockTransaction> transactions = new ArrayList<>();
         File file = new File(FILE_PATH);
 
-        // Return empty list if the file does not exist yet
+        // if file does not exist return empty list
         if (!file.exists()) {
             return transactions;
         }
@@ -49,20 +46,20 @@ public class StockService {
         BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH));
         String line;
 
+        // read file line by line
         while ((line = reader.readLine()) != null) {
 
-            // Skip empty lines
+            // skip empty lines
             if (line.trim().isEmpty()) continue;
 
-            // Split the pipe-separated line into fields
-            // Format: TXN-001|STOCK_IN|PRD-001|Laptop|10|2025-05-01|Initial stock
+            // split each line by | to get the fields
             String[] parts = line.split("\\|");
             if (parts.length < 7) continue;
 
             String type = parts[1];
             StockTransaction transaction;
 
-            // POLYMORPHISM: Reconstruct the correct subclass based on type
+            // create the correct object based on transaction type
             if (type.equals("STOCK_IN")) {
                 transaction = new StockInTransaction(
                         parts[0], parts[2], parts[3],
@@ -80,16 +77,12 @@ public class StockService {
         return transactions;
     }
 
-    // -------------------------------------------------------
-    // UPDATE — Update the quantity of an existing transaction
-    // -------------------------------------------------------
-    public void updateTransaction(String transactionId,
-                                  int newQuantity,
-                                  String newNotes) throws IOException {
+    // finds a transaction by id and updates quantity and notes
+    public void updateTransaction(String transactionId, int newQuantity, String newNotes) throws IOException {
 
         List<StockTransaction> transactions = getAllTransactions();
 
-        // Find the matching transaction and update its fields
+        // find the transaction with matching id and update it
         for (StockTransaction t : transactions) {
             if (t.getTransactionId().equals(transactionId)) {
                 t.setQuantity(newQuantity);
@@ -98,31 +91,27 @@ public class StockService {
             }
         }
 
-        // Rewrite the entire file with the updated data
+        // write all transactions back to the file
         rewriteFile(transactions);
     }
 
-    // -------------------------------------------------------
-    // DELETE — Remove a transaction by its ID
-    // -------------------------------------------------------
+    // removes a transaction from the txt file by id
     public void deleteTransaction(String transactionId) throws IOException {
 
         List<StockTransaction> transactions = getAllTransactions();
 
-        // Remove the transaction that matches the given ID
+        // remove the transaction that matches the given id
         transactions.removeIf(t -> t.getTransactionId().equals(transactionId));
 
-        // Rewrite the entire file without the deleted transaction
+        // write remaining transactions back to the file
         rewriteFile(transactions);
     }
 
-    // -------------------------------------------------------
-    // HELPER — Rewrite the entire file with updated data
-    // Used by both UPDATE and DELETE operations
-    // -------------------------------------------------------
+    // rewrites the entire file with the updated list
     private void rewriteFile(List<StockTransaction> transactions)
             throws IOException {
 
+        // open file without append so old content is replaced
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(FILE_PATH, false));
 
@@ -134,20 +123,20 @@ public class StockService {
         writer.close();
     }
 
-    // -------------------------------------------------------
-    // HELPER — Find a single transaction by its ID
-    // Used by the Update page to pre-fill the form
-    // -------------------------------------------------------
+    // finds and returns a single transaction by its id
     public StockTransaction getTransactionById(String transactionId)
             throws IOException {
 
         List<StockTransaction> transactions = getAllTransactions();
 
+        // loop through and return the matching transaction
         for (StockTransaction t : transactions) {
             if (t.getTransactionId().equals(transactionId)) {
                 return t;
             }
         }
+
+        // return null if not found
         return null;
     }
 }
