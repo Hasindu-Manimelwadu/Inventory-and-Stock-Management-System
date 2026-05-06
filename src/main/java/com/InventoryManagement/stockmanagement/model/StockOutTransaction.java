@@ -1,25 +1,26 @@
 package com.InventoryManagement.stockmanagement.model;
 
-// INHERITANCE: Extends the abstract StockTransaction class
+// this class handles stock out transactions
+// extends StockTransaction to get all the common fields
 public class StockOutTransaction extends StockTransaction {
 
-    public StockOutTransaction(String transactionId, String productId,
-                               String productName, int quantity,
-                               String date, String notes) {
+    // constructor to set all the values
+    public StockOutTransaction(String transactionId, String productId, String productName, int quantity, String date, String notes) {
         super(transactionId, productId, productName, quantity, date, notes);
     }
 
+    // default constructor
     public StockOutTransaction() {
         super();
     }
 
-    // POLYMORPHISM: Returns "STOCK_OUT" as the type label
+    // stock out type is always STOCK_OUT
     @Override
     public String getTransactionType() {
         return "STOCK_OUT";
     }
 
-    // POLYMORPHISM: Stock-out decreases stock level (negative value)
+    // stock out removes from stock so quantity is negative
     @Override
     public int getStockEffect() {
         return -getQuantity();
