@@ -12,18 +12,16 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+// controller class that handles all requests for stock management
 @Controller
 @RequestMapping("/stock")
 public class StockController {
 
-    // Spring automatically injects the StockService instance
+    // spring will automatically create and inject the service
     @Autowired
     private StockService stockService;
 
-    // -------------------------------------------------------
-    // READ — Show all stock transactions (stockList page)
-    // URL: GET /stock/list
-    // -------------------------------------------------------
+    // loads all transactions and shows the stock list page
     @GetMapping("/list")
     public String listTransactions(
             @RequestParam(required = false) String search,
@@ -31,10 +29,11 @@ public class StockController {
             Model model) {
 
         try {
+            // get all transactions from the service
             List<StockTransaction> transactions =
                     stockService.getAllTransactions();
 
-            // Filter by search keyword if provided
+            // filter by search keyword if user typed something
             if (search != null && !search.isEmpty()) {
                 String keyword = search.toLowerCase();
                 transactions = transactions.stream()
@@ -45,13 +44,14 @@ public class StockController {
                         .toList();
             }
 
-            // Filter by transaction type if provided
+            // filter by transaction type if user selected one
             if (type != null && !type.isEmpty()) {
                 transactions = transactions.stream()
                         .filter(t -> t.getTransactionType().equals(type))
                         .toList();
             }
 
+            // send transactions to the html page
             model.addAttribute("transactions", transactions);
             model.addAttribute("search", search);
             model.addAttribute("type", type);
@@ -64,67 +64,53 @@ public class StockController {
         return "stockmanagement/stockList";
     }
 
-    // -------------------------------------------------------
-    // CREATE — Show the Add Stock form (addStock page)
-    // URL: GET /stock/add
-    // -------------------------------------------------------
+    // shows the add stock form
     @GetMapping("/add")
     public String showAddForm() {
         return "stockmanagement/addStock";
     }
 
-    // -------------------------------------------------------
-    // CREATE — Handle the Add Stock form submission
-    // URL: POST /stock/add
-    // -------------------------------------------------------
+    // handles the form submission when adding a new stock entry
     @PostMapping("/add")
-    public String addTransaction(
-            @RequestParam String productId,
-            @RequestParam String productName,
-            @RequestParam int quantity,
-            @RequestParam String transactionType,
-            @RequestParam String date,
-            @RequestParam(required = false, defaultValue = "") String notes,
-            Model model) {
+    public String addTransaction(@RequestParam String productId, @RequestParam String productName, @RequestParam int quantity, @RequestParam String transactionType, @RequestParam String date, @RequestParam(required = false, defaultValue = "") String notes, Model model) {
 
         try {
             StockTransaction transaction;
 
-            // POLYMORPHISM: Create the correct subclass based on form input
+            // create stock in or stock out object based on user selection
             if (transactionType.equals("STOCK_IN")) {
-                transaction = new StockInTransaction(
-                        "", productId, productName, quantity, date, notes);
+                transaction = new StockInTransaction("", productId, productName, quantity, date, notes);
             } else {
-                transaction = new StockOutTransaction(
-                        "", productId, productName, quantity, date, notes);
+                transaction = new StockOutTransaction("", productId, productName, quantity, date, notes);
             }
 
+            // save the transaction using the service
             stockService.addTransaction(transaction);
+
+            // go back to the list page after saving
             return "redirect:/stock/list";
 
         } catch (IOException e) {
-            model.addAttribute("error",
-                    "Failed to save transaction: " + e.getMessage());
+            model.addAttribute("error", "Failed to save transaction: " + e.getMessage());
             return "stockmanagement/addStock";
         }
     }
 
-    // -------------------------------------------------------
-    // UPDATE — Show the Update form pre-filled with data
-    // URL: GET /stock/update?id=TXN-001
-    // -------------------------------------------------------
+    // loads the update form with the existing transaction data
     @GetMapping("/update")
-    public String showUpdateForm(
-            @RequestParam String id, Model model) {
+    public String showUpdateForm(@RequestParam String id, Model model) {
 
         try {
+            // find the transaction by id to pre fill the form
             StockTransaction transaction =
                     stockService.getTransactionById(id);
 
+            // if not found go back to list
             if (transaction == null) {
                 return "redirect:/stock/list";
             }
 
+            // send the transaction to the html page
             model.addAttribute("transaction", transaction);
 
         } catch (IOException e) {
@@ -135,19 +121,15 @@ public class StockController {
         return "stockmanagement/adjustStock";
     }
 
-    // -------------------------------------------------------
-    // UPDATE — Handle the Update form submission
-    // URL: POST /stock/update
-    // -------------------------------------------------------
+    // handles the form submission when updating a stock entry
     @PostMapping("/update")
-    public String updateTransaction(
-            @RequestParam String transactionId,
-            @RequestParam int quantity,
-            @RequestParam(required = false, defaultValue = "") String notes,
-            Model model) {
+    public String updateTransaction(@RequestParam String transactionId, @RequestParam int quantity, @RequestParam(required = false, defaultValue = "") String notes, Model model) {
 
         try {
+            // update the transaction using the service
             stockService.updateTransaction(transactionId, quantity, notes);
+
+            // go back to the list page after updating
             return "redirect:/stock/list";
 
         } catch (IOException e) {
@@ -157,19 +139,18 @@ public class StockController {
         }
     }
 
-    // -------------------------------------------------------
-    // DELETE — Delete a transaction by ID
-    // URL: GET /stock/delete?id=TXN-001
-    // -------------------------------------------------------
+    // handles the delete request when user clicks the delete button
     @GetMapping("/delete")
     public String deleteTransaction(@RequestParam String id) {
 
         try {
+            // delete the transaction using the service
             stockService.deleteTransaction(id);
         } catch (IOException e) {
             System.out.println("Delete failed: " + e.getMessage());
         }
 
+        // go back to the list page after deleting
         return "redirect:/stock/list";
     }
 }
