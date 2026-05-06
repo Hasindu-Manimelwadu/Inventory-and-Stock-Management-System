@@ -1,0 +1,1 @@
+TXN-002|STOCK_IN|PRD-002|Monitor|10|2026-05-06|Initial stock entry                   
