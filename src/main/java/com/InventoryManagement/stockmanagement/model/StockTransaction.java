@@ -1,8 +1,9 @@
 package com.InventoryManagement.stockmanagement.model;
 
+// base class for all stock transactions
 public abstract class StockTransaction {
 
-    // ENCAPSULATION: All fields are private with getters and setters
+    // transaction details
     private String transactionId;
     private String productId;
     private String productName;
@@ -10,36 +11,31 @@ public abstract class StockTransaction {
     private String date;
     private String notes;
 
-    // Parameterised constructor
-    public StockTransaction(String transactionId, String productId,
-                            String productName, int quantity,
-                            String date, String notes) {
+    // constructor with all fields
+    public StockTransaction(String transactionId, String productId, String productName, int quantity, String date, String notes) {
         this.transactionId = transactionId;
-        this.productId     = productId;
-        this.productName   = productName;
-        this.quantity      = quantity;
-        this.date          = date;
-        this.notes         = notes;
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.date = date;
+        this.notes = notes;
     }
 
-    // Default constructor
+    // default constructor
     public StockTransaction() {}
 
-    // ABSTRACTION: Subclasses must provide their own transaction type
+    // subclasses will return their own type
     public abstract String getTransactionType();
 
-    // ABSTRACTION: Subclasses must define how stock quantity is affected
+    // subclasses will define how stock quantity is affected
     public abstract int getStockEffect();
 
-    // Converts object to a pipe-separated line for text file storage
-    // Format: TXN-001|STOCK_IN|PRD-001|Laptop|10|2025-05-01|Initial stock
+    // converts object to a line for saving in the txt file
     public String toFileString() {
-        return transactionId + "|" + getTransactionType() + "|" +
-                productId + "|" + productName + "|" +
-                quantity + "|" + date + "|" + notes;
+        return transactionId + "|" + getTransactionType() + "|" + productId + "|" + productName + "|" + quantity + "|" + date + "|" + notes;
     }
 
-    // Getters and Setters
+    // getters and setters
     public String getTransactionId() { return transactionId; }
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
