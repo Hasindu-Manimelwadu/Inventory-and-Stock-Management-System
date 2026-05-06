@@ -2,101 +2,135 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Adjust Stock Entry</title>
+    <title>Add Stock Entry</title>
+    <!-- bootstrap for styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0">🔄 Adjust Stock Entry</h5>
-                </div>
-                <div class="card-body">
+    <style>
+        /* page background color */
+        body { background-color: #f0f4f8; }
 
-                    <!-- Error Message -->
-                    <div th:if="${error}"
-                         class="alert alert-danger"
-                         th:text="${error}">
+        /* card styling */
+        .card { border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        /* card header styling */
+        .card-header { background-color: #0d6efd; color: white;
+                       border-radius: 12px 12px 0 0 !important; }
+    </style>
+</head>
+<body>
+<div class="container mt-5 mb-5">
+    <div class="card">
+
+        <!-- page title -->
+        <div class="card-header py-3">
+            <h4 class="mb-0">📦 Add New Stock Entry</h4>
+        </div>
+
+        <div class="card-body p-4">
+
+            <!-- show error message if something goes wrong -->
+            <div th:if="${error}"
+                 class="alert alert-danger"
+                 th:text="${error}">
+            </div>
+
+            <!-- form submits to /stock/add -->
+            <form action="/stock/add" method="POST">
+
+                <!-- product details section -->
+                <h6 class="text-muted mb-3">🏷️ Product Information</h6>
+                <div class="row mb-3">
+
+                    <!-- product id field -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Product ID</label>
+                        <input type="text"
+                               class="form-control"
+                               name="productId"
+                               placeholder="e.g. PRD-001"
+                               required>
                     </div>
 
-                    <form action="/stock/update" method="POST">
-
-                        <!-- Hidden field — passes the ID to the controller -->
-                        <input type="hidden"
-                               name="transactionId"
-                               th:value="${transaction.transactionId}">
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Transaction ID
-                            </label>
-                            <input type="text"
-                                   class="form-control"
-                                   th:value="${transaction.transactionId}"
-                                   readonly
-                                   style="background:#e9ecef;">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Product
-                            </label>
-                            <input type="text"
-                                   class="form-control"
-                                   th:value="${transaction.productName}"
-                                   readonly
-                                   style="background:#e9ecef;">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Transaction Type
-                            </label>
-                            <input type="text"
-                                   class="form-control"
-                                   th:value="${transaction.transactionType}"
-                                   readonly
-                                   style="background:#e9ecef;">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                New Quantity
-                            </label>
-                            <input type="number"
-                                   class="form-control"
-                                   name="quantity"
-                                   th:value="${transaction.quantity}"
-                                   min="1"
-                                   required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Notes</label>
-                            <textarea class="form-control"
-                                      name="notes"
-                                      rows="2"
-                                      th:text="${transaction.notes}">
-                            </textarea>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit"
-                                    class="btn btn-warning px-4">
-                                Update Entry
-                            </button>
-                            <a href="/stock/list"
-                               class="btn btn-outline-secondary px-4">
-                                Back to List
-                            </a>
-                        </div>
-
-                    </form>
+                    <!-- product name field -->
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Product Name</label>
+                        <input type="text"
+                               class="form-control"
+                               name="productName"
+                               placeholder="e.g. Laptop"
+                               required>
+                    </div>
                 </div>
-            </div>
+
+                <!-- transaction details section -->
+                <h6 class="text-muted mb-3 mt-4">📋 Transaction Details</h6>
+                <div class="row mb-3">
+
+                    <!-- transaction type dropdown -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            Transaction Type
+                        </label>
+                        <select class="form-select"
+                                name="transactionType"
+                                required>
+                            <option value="">-- Select type --</option>
+                            <option value="STOCK_IN">
+                                📥 Stock In (Receiving)
+                            </option>
+                            <option value="STOCK_OUT">
+                                📤 Stock Out (Issuing)
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- quantity field -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Quantity</label>
+                        <input type="number"
+                               class="form-control"
+                               name="quantity"
+                               min="1"
+                               placeholder="0"
+                               required>
+                    </div>
+
+                    <!-- date field -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Date</label>
+                        <input type="date"
+                               class="form-control"
+                               name="date"
+                               required>
+                    </div>
+                </div>
+
+                <!-- notes field -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Notes</label>
+                    <textarea class="form-control"
+                              name="notes"
+                              rows="2"
+                              placeholder="Any additional notes...">
+                    </textarea>
+                </div>
+
+                <hr>
+
+                <!-- save and cancel buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        ✅ Save Stock Entry
+                    </button>
+                    <a href="/stock/list"
+                       class="btn btn-outline-secondary px-4">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
         </div>
     </div>
 </div>
