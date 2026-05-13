@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User List</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f1117;
+            color: #f5f5f5;
+        }
+
+        .sidebar {
+            width: 230px;
+            height: 100vh;
+            background: #1b1f2a;
+            position: fixed;
+            padding: 25px 20px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .menu a {
+            display: block;
+            color: #aaa;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .menu a.active, .menu a:hover {
+            background: #282d44;
+            color: #7c6cff;
+        }
+
+        .main {
+            margin-left: 270px;
+            padding: 40px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: #7c6cff;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .search-box {
+            margin: 25px 0;
+        }
+
+        .search-box input {
+            width: 350px;
+            padding: 13px;
+            border-radius: 10px;
+            border: 1px solid #33384d;
+            background: #1b1f2a;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1b1f2a;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #252b42;
+            color: #aaa;
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #2c3145;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .ADMIN {
+            background: rgba(124,108,255,0.2);
+            color: #7c6cff;
+        }
+
+        .STAFF {
+            background: rgba(0,210,170,0.2);
+            color: #00d2aa;
+        }
+
+        .action {
+            color: #aaa;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .delete {
+            color: #ff5c7a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo">📦 StockFlow<br><small>Inventory System</small></div>
+    <div class="menu">
+        <a href="/users" class="active">User List</a>
+        <a href="/register">Register User</a>
+        <a href="/login">Login</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="top">
+        <div>
+            <h1>User Management</h1>
+            <p>Manage system admins and staff</p>
+        </div>
+        <a href="/register" class="btn">+ New User</a>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by username or role..." onkeyup="filterTable()">
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Permission</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody id="userTable">
+        <tr th:each="user : ${users}">
+            <td th:text="${user.userId}"></td>
+            <td th:text="${user.username}"></td>
+            <td th:text="${user.email}"></td>
+            <td>
+                <span class="badge" th:classappend="${user.role}" th:text="${user.role}"></span>
+            </td>
+            <td th:text="${user.permissionLevel}"></td>
+            <td>
+                <a class="action" th:href="@{/editUser/{id}(id=${user.userId})}">Edit</a>
+                <a class="action delete"
+                   th:href="@{/deleteUser/{id}(id=${user.userId})}"
+                   onclick="return confirm('Delete this user?')">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.querySelectorAll("#userTable tr");
+
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
+</script>
+
+</body>
+</html>
