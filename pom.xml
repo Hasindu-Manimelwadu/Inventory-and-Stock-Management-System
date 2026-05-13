@@ -46,6 +46,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>
+						com.InventoryManagement.stockmanagement.StockManagementApplication
+					</mainClass>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

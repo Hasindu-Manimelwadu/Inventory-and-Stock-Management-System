@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Adjust Stock Entry</title>
+    <!-- bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+
+                <!-- page title -->
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">🔄 Adjust Stock Entry</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- show error message if something goes wrong -->
+                    <div th:if="${error}"
+                         class="alert alert-danger"
+                         th:text="${error}">
+                    </div>
+
+                    <!-- show message if transaction not found -->
+                    <div th:if="${transaction == null}" class="alert alert-warning">
+                        Transaction not found.
+                        <a href="/stock/list">Go back to list</a>
+                    </div>
+
+                    <!-- show form only if transaction is found -->
+                    <div th:if="${transaction != null}">
+                        <!-- form submits to /stock/update -->
+                        <form action="/stock/update" method="POST">
+
+                            <!-- hidden field to pass the transaction id -->
+                            <input type="hidden"
+                                   name="transactionId"
+                                   th:value="${transaction.transactionId}">
+
+                            <!-- transaction id shown as read only -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Transaction ID
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:value="${transaction.transactionId}"
+                                       readonly
+                                       style="background:#e9ecef;">
+                            </div>
+
+                            <!-- product name shown as read only -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Product
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:value="${transaction.productName}"
+                                       readonly
+                                       style="background:#e9ecef;">
+                            </div>
+
+                            <!-- transaction type shown as read only -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Transaction Type
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:value="${transaction.transactionType}"
+                                       readonly
+                                       style="background:#e9ecef;">
+                            </div>
+
+                            <!-- quantity field that can be changed -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    New Quantity
+                                </label>
+                                <input type="number"
+                                       class="form-control"
+                                       name="quantity"
+                                       th:value="${transaction.quantity}"
+                                       min="1"
+                                       required>
+                            </div>
+
+                            <!-- notes field that can be changed -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Notes</label>
+                                <textarea class="form-control"
+                                          name="notes"
+                                          rows="2"
+                                          th:text="${transaction.notes}">
+                                </textarea>
+                            </div>
+
+                            <!-- update and back buttons -->
+                            <div class="d-flex gap-2">
+                                <button type="submit"
+                                        class="btn btn-warning px-4">
+                                    Update Entry
+                                </button>
+                                <a href="/stock/list"
+                                   class="btn btn-outline-secondary px-4">
+                                    Back to List
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
